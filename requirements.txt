@@ -1,0 +1,14 @@
+# Daily Briefing — 依赖
+# Python 3.10+
+
+# 阶段一：信源
+tavily-python>=0.5.0
+python-dotenv>=1.0.0
+
+# 阶段二：LangGraph + LLM
+langgraph>=0.2.0
+langchain-core>=0.3.0
+langchain-openai>=0.2.0
+
+# 阶段三：RSS 补充
+feedparser>=6.0.0

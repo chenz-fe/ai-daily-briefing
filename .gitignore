@@ -1,0 +1,25 @@
+# Python / backend
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Env files
+.env
+.env.*
+
+# Daily outputs (根据需要选择是否提交历史，这里默认提交 daily_news，所以不忽略)
+# daily_news/
+
+# Frontend (Vite + React)
+web/node_modules/
+web/dist/
+web/.cache/
+web/.vite/
+
+# Editor / OS
+.DS_Store
+*.log
+
