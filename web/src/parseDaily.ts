@@ -117,11 +117,33 @@ function splitItems(section: { title: string; content: string }): DailySection {
       if (playerMatch) {
         flush()
         const name = playerMatch[1].trim()
-        const summary = playerMatch[2].trim()
+        let summary = playerMatch[2].trim()
+
+        // 提前从 summary 中抽出 [原文链接](URL)（来源：XXX），避免原样出现在正文里
+        let link: string | undefined
+        let source: string | undefined
+        const linkMatchInSummary = summary.match(/\[(.+?)\]\((.+?)\)（来源：(.+?)）/)
+        if (linkMatchInSummary) {
+          const before = summary.slice(0, linkMatchInSummary.index).trim()
+          if (before) {
+            summary = before
+          } else {
+            summary = ''
+          }
+          link = linkMatchInSummary[2].trim()
+          source = linkMatchInSummary[3].trim()
+        }
+
         current = {
           id: name,
           title: name,
           paragraphs: summary ? [summary] : []
+        }
+        if (link) {
+          current.link = link
+        }
+        if (source) {
+          current.source = source
         }
         continue
       }
