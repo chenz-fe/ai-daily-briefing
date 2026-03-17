@@ -137,10 +137,10 @@ Save Node（写文件 + frontmatter，可选 MCP）
 
 | 节点 | 输入依赖 | 行为 | 输出更新 |
 |------|----------|------|----------|
-| **Search** | 无（或 config 中的关键词） | 调用 Tavily API，关键词如 "Top AI News today" / "AI Agents latest news" / "LLM trends 2026"；可选拉取 1～2 个 RSS，合并去重 | `raw_items` |
-| **Filter** | `raw_items` | 将 raw_items 转成文本，调用 LLM 做「是否与 AI 相关、是否广告/噪音」判断，返回保留条目列表（或索引） | `filtered_items` |
-| **Summary** | `filtered_items` | 使用继承自 ai-news-briefing 的 prompt 模板，仅基于 filtered_items 生成简报 Markdown | `report_markdown` |
-| **Save** | `report_markdown` | 解析摘要行、生成 frontmatter、写入 `daily_news/YYYY-MM-DD_daily_news.md`（或 `daily_reports/`）；可选：通过 MCP 写文件 | `report_path` |
+| **Search** | `raw_items` | Search 节点输出：原始条目 |
+| **Filter** | `filtered_items` | Filter 节点输出：通过过滤的条目 |
+| **Summary** | `report_markdown` | Summary 节点输出：简报正文 |
+| **Save** | `report_path` | Save 节点输出：最终文件路径 |
 
 ### 3.4 依赖与配置
 
@@ -163,12 +163,15 @@ Save Node（写文件 + frontmatter，可选 MCP）
 
 ```
 ai/daily-briefing/
-├── 00_项目计划.md          # 本文档
-├── README.md               # 项目说明、运行方式、环境与验收说明
-├── .env.example            # 示例环境变量
-├── config.py               # 配置（Tavily、LLM、OUTPUT_DIR 等）
-├── requirements.txt        # 依赖
-├── main.py                 # 入口：构建图并执行
+├── docs/
+│   ├── 01_project_plan.md    # 项目计划（本文档）
+│   ├── 02_execution_plan.md  # 执行计划表
+│   └── 03_frontend_design.md # 前端界面设计
+├── README.md                 # 项目说明、运行方式、环境与验收说明
+├── .env.example              # 示例环境变量
+├── config.py                 # 配置（Tavily、LLM、OUTPUT_DIR 等）
+├── requirements.txt          # 依赖
+├── main.py                   # 入口：构建图并执行
 ├── graph/
 │   ├── __init__.py
 │   ├── state.py            # State 定义
@@ -180,7 +183,7 @@ ai/daily-briefing/
 │   └── build.py            # 建图：add_node, add_edge, compile
 ├── prompts/
 │   ├── filter_prompt.txt   # Filter 节点用
-│   └── summary_prompt.txt   # Summary 节点用（继承 ai-news-briefing）
+│   └── summary_prompt.txt  # Summary 节点用（继承 ai-news-briefing）
 ├── daily_news/             # 输出目录（或 daily_reports，与 config 一致）
 │   └── .gitkeep
 └── tests/                  # 可选：单节点或 E2E 测试
@@ -267,3 +270,4 @@ ai/daily-briefing/
 
 - 本文档以**产品目标**为主，不绑定任何学习计划或考核；阶段与验收均按「把产品做好」来写。
 - 命名、参考文档、错误处理等见前文；若有变更，在本节或正文中更新并注明日期即可。
+

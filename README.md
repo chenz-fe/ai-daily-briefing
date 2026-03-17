@@ -1,6 +1,6 @@
 # Daily Briefing（AI 新闻雷达）
 
-基于 LangGraph + Tavily + LLM 的 AI 日报 Agent，自动生成每日简报 Markdown。详见 [00_项目计划.md](00_项目计划.md)，执行清单见 [01_执行计划表.md](01_执行计划表.md)。
+基于 LangGraph + Tavily + LLM 的 AI 日报 Agent，自动生成每日简报 Markdown。详见 `docs/01_project_plan.md`，执行清单见 `docs/02_execution_plan.md`，前端界面设计见 `docs/03_frontend_design.md`。
 
 ## 环境
 
