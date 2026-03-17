@@ -122,7 +122,7 @@ function splitItems(section: { title: string; content: string }): DailySection {
         // 提前从 summary 中抽出 [原文链接](URL)（来源：XXX），避免原样出现在正文里
         let link: string | undefined
         let source: string | undefined
-        const linkMatchInSummary = summary.match(/\[(.+?)\]\((.+?)\)（来源：(.+?)）/)
+        const linkMatchInSummary = summary.match(/\[(.+?)\]\((.+?)\)\s*[（(]来源[：:](.+?)[）)]/)
         if (linkMatchInSummary) {
           const before = summary.slice(0, linkMatchInSummary.index).trim()
           if (before) {
@@ -150,7 +150,7 @@ function splitItems(section: { title: string; content: string }): DailySection {
     }
 
     // 匹配行中出现的 [原文链接](URL)（来源：XXX），可能在句子末尾
-    const linkMatch = trimmed.match(/\[(.+?)\]\((.+?)\)（来源：(.+?)）/)
+    const linkMatch = trimmed.match(/\[(.+?)\]\((.+?)\)\s*[（(]来源[：:](.+?)[）)]/)
     if (linkMatch) {
       const before = trimmed.slice(0, linkMatch.index).trim()
       if (before) {

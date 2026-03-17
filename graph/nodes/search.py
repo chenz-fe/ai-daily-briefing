@@ -5,6 +5,9 @@ import time
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
+import difflib
+from typing import Optional
+import os
 
 # 项目根
 ROOT = Path(__file__).resolve().parents[2]
@@ -96,8 +99,28 @@ def _fetch_tavily() -> list[dict]:
 def search_node(state: dict) -> dict:
     """Tavily（带重试）+ RSS，合并按 url 去重；Tavily 全失败时仅返回 RSS。"""
     seen: set[str] = set()
+    seen_titles: list[str] = []
     combined: list[dict] = []
-    tavily_error: str | None = None
+    tavily_error: Optional[str] = None
+
+    def add_if_not_duplicate(item: dict):
+        u = (item.get("url") or "").strip()
+        t = (item.get("title") or "").strip()
+        
+        if u and u in seen:
+            return
+            
+        if t:
+            t_lower = t.lower()
+            for st in seen_titles:
+                # 使用标题相似度去重，如果大于 0.8 则认为是同一条新闻
+                if difflib.SequenceMatcher(None, t_lower, st).ratio() > 0.8:
+                    return
+            seen_titles.append(t_lower)
+            
+        if u:
+            seen.add(u)
+        combined.append(item)
 
     # 1) Tavily：有限次重试
     for attempt in range(TAVILY_MAX_RETRIES):
@@ -107,24 +130,32 @@ def search_node(state: dict) -> dict:
                 break
             items = _fetch_tavily()
             for it in items:
-                u = (it.get("url") or "").strip()
-                if u and u not in seen:
-                    seen.add(u)
-                    combined.append(it)
+                add_if_not_duplicate(it)
             tavily_error = None
             break
         except Exception as e:
             tavily_error = str(e)
+            print(f"DEBUG: Tavily fetch attempt {attempt + 1} failed: {e}", file=sys.stderr)
             if attempt < TAVILY_MAX_RETRIES - 1:
                 time.sleep(TAVILY_RETRY_DELAY)
 
     # 2) RSS：与 Tavily 合并去重；Tavily 失败时 RSS 作唯一信源
+    # 增加临时代理绕过（如果是因为代理导致无法访问RSS）
+    old_proxy = os.environ.get("HTTP_PROXY")
+    old_proxys = os.environ.get("HTTPS_PROXY")
+    os.environ["HTTP_PROXY"] = ""
+    os.environ["HTTPS_PROXY"] = ""
+    
     rss_items = _fetch_rss()
+    print(f"DEBUG: Fetched {len(rss_items)} items from RSS", file=sys.stderr)
+    
+    if old_proxy is not None:
+        os.environ["HTTP_PROXY"] = old_proxy
+    if old_proxys is not None:
+        os.environ["HTTPS_PROXY"] = old_proxys
+        
     for it in rss_items:
-        u = (it.get("url") or "").strip()
-        if u and u not in seen:
-            seen.add(u)
-            combined.append(it)
+        add_if_not_duplicate(it)
 
     # 有任意信源即成功；仅当全部失败才返回 error
     if not combined and tavily_error:

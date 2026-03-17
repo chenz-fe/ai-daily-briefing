@@ -18,6 +18,13 @@ def main():
     graph = build_graph()
     initial: dict = {}
     result = graph.invoke(initial)
+    
+    # 增加调试输出
+    print(f"DEBUG: raw_items count = {len(result.get('raw_items', []))}")
+    print(f"DEBUG: filtered_items count = {len(result.get('filtered_items', []))}")
+    print(f"DEBUG: report_markdown length = {len(result.get('report_markdown', ''))}")
+    if result.get("error"):
+        print(f"DEBUG: error = {result.get('error')}")
 
     path = result.get("report_path")
     if result.get("error"):

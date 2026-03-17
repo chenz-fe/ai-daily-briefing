@@ -24,32 +24,10 @@ def _load_prompt() -> str:
     return p.read_text(encoding="utf-8") if p.exists() else "请保留与 AI 相关的条目，输出 JSON: {\"keep_indices\": [0,1,2]}"
 
 
-def _parse_keep_indices(text: str, n: int) -> list[int]:
-    """从 LLM 输出中解析 keep_indices，合法下标在 [0, n-1]。"""
-    text = text.strip()
-    # 去掉可能的 markdown 代码块
-    if "```" in text:
-        for part in re.split(r"```\w*\n?", text):
-            if "keep_indices" in part or "[" in part:
-                text = part
-                break
-    try:
-        obj = json.loads(text)
-        indices = obj.get("keep_indices", obj.get("keep_indices", []))
-    except json.JSONDecodeError:
-        # 尝试从行内提取 [0, 1, 2]
-        m = re.search(r"\[[\s\d,]+\]", text)
-        if m:
-            try:
-                indices = json.loads(m.group())
-            except json.JSONDecodeError:
-                indices = []
-        else:
-            indices = []
-    if not isinstance(indices, list):
-        indices = []
-    return [i for i in indices if isinstance(i, int) and 0 <= i < n]
+from pydantic import BaseModel, Field
 
+class FilterResult(BaseModel):
+    keep_indices: list[int] = Field(description="保留条目的下标列表")
 
 def filter_node(state: dict) -> dict:
     """根据 raw_items 调用 LLM 筛选，返回 filtered_items。"""
@@ -74,12 +52,12 @@ def filter_node(state: dict) -> dict:
         base_url=config.LLM_BASE_URL or None,
         temperature=0.1,
     )
+    structured_llm = llm.with_structured_output(FilterResult)
     last_error = None
     for attempt in range(LLM_RETRY_MAX + 1):
         try:
-            msg = llm.invoke([HumanMessage(content=prompt)])
-            content = getattr(msg, "content", "") or str(msg)
-            indices = _parse_keep_indices(content, len(raw))
+            result = structured_llm.invoke([HumanMessage(content=prompt)])
+            indices = [i for i in result.keep_indices if isinstance(i, int) and 0 <= i < len(raw)]
             filtered = [raw[i] for i in indices] if indices else raw[:5]
             return {"filtered_items": filtered, "error": None}
         except Exception as e:

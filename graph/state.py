@@ -1,7 +1,7 @@
 """
 图状态定义。各节点接收完整 state，返回「部分更新」dict。
 """
-from typing import TypedDict
+from typing import TypedDict, Optional
 
 
 class BriefingState(TypedDict, total=False):
@@ -9,5 +9,5 @@ class BriefingState(TypedDict, total=False):
     raw_items: list[dict]       # Search 输出：title, url, content, source 等
     filtered_items: list[dict] # Filter 输出：保留的条目
     report_markdown: str        # Summary 输出：摘要行 + 三章节
-    report_path: str | None     # Save 输出：最终文件路径
-    error: str | None           # 任意节点出错时写入
+    report_path: Optional[str]     # Save 输出：最终文件路径
+    error: Optional[str]           # 任意节点出错时写入

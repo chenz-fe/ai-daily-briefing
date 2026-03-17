@@ -58,6 +58,9 @@ def summary_node(state: dict) -> dict:
     if not items:
         return {"report_markdown": "摘要：今日暂无筛选后的 AI 条目。\n\n## 1. 本周值得关注的 AI 产品与工具\n\n（无）\n\n## 2. 各场景下的头部模型与玩家\n\n（无）\n\n## 3. 今日 AI 大事件与重要言论\n\n（无）"}
 
+    # 防溢出：最多只取前 15 条
+    items = items[:15]
+
     items_content = _items_to_content(items)
     prompt_template = _load_prompt()
     prompt = prompt_template.replace("{{items_content}}", items_content)

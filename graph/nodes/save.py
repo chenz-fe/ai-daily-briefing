@@ -20,11 +20,16 @@ def _parse_summary_and_content(markdown: str) -> tuple[str, str]:
     lines = markdown.strip().split("\n")
     description = ""
     rest: list[str] = []
+    
+    summary_pattern = re.compile(r"^[*#]*摘要[:：]\s*(.*)$")
+    
     for i, line in enumerate(lines):
         stripped = line.strip()
-        if i == 0 and stripped.startswith("摘要："):
-            description = stripped.removeprefix("摘要：").strip()
-            continue
+        if i == 0:
+            match = summary_pattern.match(stripped)
+            if match:
+                description = match.group(1).rstrip("*# ")
+                continue
         rest.append(line)
     body = "\n".join(rest).strip()
     return description, body
@@ -60,4 +65,5 @@ slug: "{slug}"
         out_path.write_text(full_content, encoding="utf-8")
         return {"report_path": str(out_path), "error": None}
     except Exception as e:
+        print(f"Error saving file: {e}", file=sys.stderr)
         return {"report_path": None, "error": str(e)}
