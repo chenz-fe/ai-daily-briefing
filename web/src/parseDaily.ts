@@ -177,7 +177,7 @@ function buildDailyFromRaw(raw: string): DailyFull | null {
 export const dailyMap: Record<string, DailyFull> = {}
 export const dailyList: DailyMeta[] = []
 
-Object.entries(rawFiles).forEach(([path, raw]) => {
+Object.entries(rawFiles).forEach(([_, raw]) => {
   const daily = buildDailyFromRaw(raw)
   if (!daily) return
   dailyMap[daily.slug] = daily
