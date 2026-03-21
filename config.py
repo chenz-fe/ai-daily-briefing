@@ -34,6 +34,23 @@ OUTPUT_DIR = _env("OUTPUT_DIR") or "daily_news"
 PROJECT_ROOT = Path(__file__).resolve().parent
 OUTPUT_PATH = PROJECT_ROOT / OUTPUT_DIR
 
+# --- 跨天去重（最近 N 天内已在简报中出现的 URL 直接丢弃，不补旧闻）---
+def _env_int(key: str, default: int) -> int:
+    v = _env(key)
+    if not v:
+        return default
+    try:
+        return int(v)
+    except ValueError:
+        return default
+
+
+BRIEFING_RECENT_URL_DAYS = _env_int("BRIEFING_RECENT_URL_DAYS", 7)
+# 历史文件（记录每日实际选用的条目 URL，供次日搜索去重）
+BRIEFING_URL_HISTORY_PATH = Path(
+    _env("BRIEFING_URL_HISTORY_PATH") or str(PROJECT_ROOT / ".briefing_url_history.json")
+)
+
 # --- LLM（阶段二 Filter / Summary 使用）---
 # 支持 LLM_* 或 DEEPSEEK_*（与 ai-agent-project 一致）
 LLM_API_KEY = _env("LLM_API_KEY") or _env("DEEPSEEK_API_KEY")

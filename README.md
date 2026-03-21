@@ -14,6 +14,7 @@
 - **TAVILY_API_KEY**（必填）：[Tavily](https://app.tavily.com) 申请 API Key。
 - **LLM**（阶段二，**强烈建议**）：用于 Filter 筛选与 Summary 生成「背景+要点」的完整简报。配置 `LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`，或沿用 `DEEPSEEK_API_KEY` / `DEEPSEEK_BASE_URL` / `DEEPSEEK_MODEL`（与 ai-agent-project 一致）。**未配置时只会输出「标题+链接」的简易列表，内容较单薄。**
 - **RSS**（阶段三）：默认拉取 MIT Technology Review + The Verge 与 Tavily 合并去重。可选 `RSS_FEEDS`（逗号分隔 URL）覆盖。Tavily 失败时会自动回退到仅 RSS，Filter/Summary 带有限次重试。
+- **跨天去重**（可选）：最近 7 天内已在 `daily_news/*.md`（及历史 JSON）中出现过的链接会被**直接丢弃**，**不会用旧闻补条数**（稿可变短）。每次成功保存后会把当日选用 URL 写入 `.briefing_url_history.json`（已加入 `.gitignore`）。可用 `BRIEFING_RECENT_URL_DAYS`、`BRIEFING_URL_HISTORY_PATH` 调整。
 
 ## 阶段一：信源验收
 

@@ -5,6 +5,7 @@
 """
 import os
 import sys
+from datetime import date
 from pathlib import Path
 
 # 确保项目根在 path 中，并优先加载 .env
@@ -24,8 +25,8 @@ def fetch_ai_news(max_items: int = 5) -> list[dict]:
         raise ValueError("请设置环境变量 TAVILY_API_KEY（可在 .env 中配置）")
 
     client = TavilyClient(api_key=config.TAVILY_API_KEY)
-    # 使用第一个查询即可拿到多条；topic=news 更偏新闻
-    query = config.TAVILY_SEARCH_QUERIES[0]
+    # 附带日期，减轻与「泛搜头条」连日重复
+    query = f"{config.TAVILY_SEARCH_QUERIES[0]} news {date.today().isoformat()}"
     response = client.search(
         query=query,
         topic="news",

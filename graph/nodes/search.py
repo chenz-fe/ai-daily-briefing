@@ -1,8 +1,10 @@
 """
 Search 节点：Tavily 多关键词搜索 + 可选 RSS，合并去重；带重试，Tavily 失败时回退到仅 RSS。
+跨天优先未在近期简报中出现的 URL，查询附带当日日期以提高时效。
 """
 import time
 import sys
+from datetime import date
 from pathlib import Path
 from urllib.parse import urlparse
 import difflib
@@ -16,6 +18,8 @@ if str(ROOT) not in sys.path:
 
 import config
 from tavily import TavilyClient
+
+from graph.history import load_recent_briefing_urls, prioritize_unseen_urls
 
 try:
     import feedparser
@@ -72,9 +76,11 @@ def _fetch_tavily() -> list[dict]:
     seen_urls: set[str] = set()
     all_items: list[dict] = []
     max_per_query = 5
+    day_tag = date.today().strftime("%Y-%m-%d")
     for query in config.TAVILY_SEARCH_QUERIES[:3]:
+        q = f"{query} news {day_tag}"
         response = client.search(
-            query=query,
+            query=q,
             topic="news",
             max_results=max_per_query,
             search_depth="advanced",
@@ -156,6 +162,17 @@ def search_node(state: dict) -> dict:
         
     for it in rss_items:
         add_if_not_duplicate(it)
+
+    # 跨天去重：丢弃近期已在简报中出现过的链接，不补位旧闻
+    recent = load_recent_briefing_urls()
+    before_n = len(combined)
+    combined = prioritize_unseen_urls(combined, recent)
+    if recent:
+        print(
+            f"DEBUG: cross-day URL filter — recent_pool={len(recent)}, "
+            f"before={before_n}, after={len(combined)} (no stale backfill)",
+            file=sys.stderr,
+        )
 
     # 有任意信源即成功；仅当全部失败才返回 error
     if not combined and tavily_error:

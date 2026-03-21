@@ -10,6 +10,9 @@ venv/
 .env
 .env.*
 
+# 跨天去重：本地 URL 历史（可按需提交到仓库以在多机共享）
+.briefing_url_history.json
+
 # Daily outputs (根据需要选择是否提交历史，这里默认提交 daily_news，所以不忽略)
 # daily_news/
 

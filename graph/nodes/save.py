@@ -11,6 +11,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import config
+from graph.history import record_briefing_urls
 
 
 def _parse_summary_and_content(markdown: str) -> tuple[str, str]:
@@ -63,6 +64,16 @@ slug: "{slug}"
         full_content = frontmatter + body
 
         out_path.write_text(full_content, encoding="utf-8")
+
+        # 记录本日选用条目 URL，供后续运行做跨天去重（与 Markdown 内链接解析互为补充）
+        items = state.get("filtered_items") or []
+        urls = [(it.get("url") or "").strip() for it in items if (it.get("url") or "").strip()]
+        if urls:
+            try:
+                record_briefing_urls(today.isoformat(), urls)
+            except Exception as e:
+                print(f"DEBUG: record_briefing_urls failed: {e}", file=sys.stderr)
+
         return {"report_path": str(out_path), "error": None}
     except Exception as e:
         print(f"Error saving file: {e}", file=sys.stderr)
