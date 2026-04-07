@@ -1,4 +1,4 @@
-# Daily Briefing 配置
+# Weekly Briefing 配置（目录名 daily-briefing 为历史保留）
 # 从环境变量加载，便于本地与 CI 复用
 
 import os
@@ -9,13 +9,29 @@ def _env(key: str, default: str = "") -> str:
     return os.environ.get(key, default).strip()
 
 
-# --- Tavily ---
+def _env_int(key: str, default: int) -> int:
+    v = _env(key)
+    if not v:
+        return default
+    try:
+        return int(v)
+    except ValueError:
+        return default
+
+
+# --- Tavily（每周简报：多查询、多结果，覆盖产品与模型/基础设施/政策等）---
 TAVILY_API_KEY = _env("TAVILY_API_KEY")
 TAVILY_SEARCH_QUERIES = [
-    "Top AI News today",
-    "AI Agents latest news",
-    "LLM trends 2025",
+    "Top AI news breakthroughs and product launches",
+    "AI Agents autonomous systems enterprise",
+    "LLM foundation models API pricing benchmarks 2026",
+    "AI regulation policy chips compute datacenter",
+    "RAG multimodal AI developer tools open source",
 ]
+# 每条查询返回条数上限（每周一次可拉高，避免内容单薄）
+TAVILY_MAX_RESULTS_PER_QUERY = _env_int("TAVILY_MAX_RESULTS_PER_QUERY", 10)
+# 实际执行前 N 条查询（全部跑满可能耗时与配额更高）
+TAVILY_QUERY_LIMIT = _env_int("TAVILY_QUERY_LIMIT", 5)
 
 # --- RSS（阶段三，与 Tavily 合并去重）---
 # 可选：通过环境变量 RSS_FEEDS 覆盖（逗号分隔的 URL）
@@ -35,18 +51,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 OUTPUT_PATH = PROJECT_ROOT / OUTPUT_DIR
 
 # --- 跨天去重（最近 N 天内已在简报中出现的 URL 直接丢弃，不补旧闻）---
-def _env_int(key: str, default: int) -> int:
-    v = _env(key)
-    if not v:
-        return default
-    try:
-        return int(v)
-    except ValueError:
-        return default
-
-
-BRIEFING_RECENT_URL_DAYS = _env_int("BRIEFING_RECENT_URL_DAYS", 7)
-# 历史文件（记录每日实际选用的条目 URL，供次日搜索去重）
+BRIEFING_RECENT_URL_DAYS = _env_int("BRIEFING_RECENT_URL_DAYS", 14)
+# 历史文件（记录每次运行实际选用的条目 URL，供后续搜索去重）
 BRIEFING_URL_HISTORY_PATH = Path(
     _env("BRIEFING_URL_HISTORY_PATH") or str(PROJECT_ROOT / ".briefing_url_history.json")
 )

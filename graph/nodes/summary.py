@@ -33,7 +33,7 @@ def _strip_markdown_fence(text: str) -> str:
 
 def _load_prompt() -> str:
     p = ROOT / "prompts" / "summary_prompt.txt"
-    return p.read_text(encoding="utf-8") if p.exists() else "请根据以下条目生成简报 Markdown，首行为「摘要：xxx」，然后三个章节。\n\n{{items_content}}"
+    return p.read_text(encoding="utf-8") if p.exists() else "请根据以下条目生成本周简报 Markdown，首行为「摘要：xxx」，然后四个章节。\n\n{{items_content}}"
 
 
 def _items_to_content(items: list[dict]) -> str:
@@ -45,7 +45,7 @@ def _items_to_content(items: list[dict]) -> str:
         content = item.get("content", "") or item.get("snippet", "")
         source = item.get("source", "tavily")
         # 多给 LLM 原文片段，便于写出背景+要点（advanced 搜索下片段更长，保留 1200 字内）
-        snippet = (content or "")[:1200] if content else "(无)"
+        snippet = (content or "")[:1600] if content else "(无)"
         parts.append(f"【{i}】{title}\n链接: {url}\n来源: {source}\n内容片段: {snippet}\n")
     return "\n".join(parts)
 
@@ -56,10 +56,12 @@ def summary_node(state: dict) -> dict:
     if state.get("error"):
         return {"report_markdown": ""}
     if not items:
-        return {"report_markdown": "摘要：今日暂无筛选后的 AI 条目。\n\n## 1. 本周值得关注的 AI 产品与工具\n\n（无）\n\n## 2. 各场景下的头部模型与玩家\n\n（无）\n\n## 3. 今日 AI 大事件与重要言论\n\n（无）"}
+        return {
+            "report_markdown": "摘要：本周暂无筛选后的 AI 条目。\n\n## 1. 本周值得关注的 AI 产品与工具\n\n（无）\n\n## 2. 各场景下的头部模型与玩家\n\n（无）\n\n## 3. 本周 AI 大事件与重要言论\n\n（无）\n\n## 4. 趋势线索与行动清单（本周可执行）\n\n（无）"
+        }
 
-    # 防溢出：最多只取前 15 条
-    items = items[:15]
+    # 防溢出：周报可合并更多条目（按 token 由模型侧截断）
+    items = items[:28]
 
     items_content = _items_to_content(items)
     prompt_template = _load_prompt()
@@ -67,18 +69,19 @@ def summary_node(state: dict) -> dict:
 
     try:
         if not config.LLM_API_KEY:
-            # 无 LLM 时仅列条目，并提示配置 LLM 后可生成完整简报
-            desc = "今日 AI 条目列表。在 .env 中配置 LLM_API_KEY 或 DEEPSEEK_API_KEY 后重新运行，可生成带背景与要点的完整简报。"
+            # 无 LLM 时仅列条目，并提示配置 LLM 后可生成完整周报
+            desc = "本周 AI 条目列表（简易版）。在 .env 中配置 LLM_API_KEY 或 DEEPSEEK_API_KEY 后重新运行，可生成带背景、对比与行动清单的完整周报。"
             lines = [f"摘要：{desc}", ""]
             lines.append("## 1. 本周值得关注的 AI 产品与工具")
-            for it in items[:5]:
+            for it in items[:10]:
                 title = (it.get("title") or "").strip() or "无标题"
                 lines.append(f"- [{title}]({it.get('url', '')})（来源：{it.get('source', '')}）")
             lines.append("\n## 2. 各场景下的头部模型与玩家\n\n（见上方条目）")
-            lines.append("\n## 3. 今日 AI 大事件与重要言论")
-            for it in items[5:10]:
+            lines.append("\n## 3. 本周 AI 大事件与重要言论")
+            for it in items[10:18]:
                 title = (it.get("title") or "").strip() or "无标题"
                 lines.append(f"- [{title}]({it.get('url', '')})（来源：{it.get('source', '')}）")
+            lines.append("\n## 4. 趋势线索与行动清单（本周可执行）\n\n（请配置 LLM 后生成）")
             return {"report_markdown": "\n".join(lines), "error": None}
 
         llm = ChatOpenAI(

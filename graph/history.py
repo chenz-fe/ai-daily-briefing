@@ -14,7 +14,10 @@ import config
 
 # 正文里 [text](url) 形式的链接
 _MD_LINK_RE = re.compile(r"\]\((https?://[^)\s]+)\)")
-_FILENAME_DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})_daily_news\.md$")
+# 兼容历史「每日」文件名与当前「每周」文件名
+_FILENAME_DATE_RE = re.compile(
+    r"^(\d{4}-\d{2}-\d{2})_(daily_news|weekly_ai_briefing)\.md$"
+)
 
 
 def normalize_url(url: str) -> str:
@@ -44,7 +47,7 @@ def _urls_from_markdown_dir(output_dir: Path, min_file_date: date) -> set[str]:
     out: set[str] = set()
     if not output_dir.is_dir():
         return out
-    for md in output_dir.glob("*_daily_news.md"):
+    for md in output_dir.glob("*.md"):
         m = _FILENAME_DATE_RE.match(md.name)
         if not m:
             continue

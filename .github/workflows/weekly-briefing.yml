@@ -1,10 +1,9 @@
-name: Daily Briefing - Generate & Deploy
+name: Weekly AI Briefing - Generate & Deploy
 
 on:
-  # 每天 00:00 UTC 触发 ≈ 北京时间 08:00
+  # 每周一 00:00 UTC ≈ 北京时间 08:00（可按需改成周日晚上等）
   schedule:
-    - cron: '0 0 * * *'
-  # 方便手动触发调试
+    - cron: '0 0 * * 1'
   workflow_dispatch: {}
 
 permissions:
@@ -30,7 +29,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run daily briefing generator
+      - name: Run weekly briefing generator
         env:
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
@@ -45,9 +44,8 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add daily_news
-            git commit -m "chore: add daily briefing report [skip ci]"
+            git commit -m "chore: add weekly AI briefing report [skip ci]"
             git push origin master
           else
             echo "No changes in daily_news, nothing to commit."
           fi
-

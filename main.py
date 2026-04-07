@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Daily Briefing 入口：加载 .env、构建图、执行一次，生成当日简报。
+Weekly Briefing 入口：加载 .env、构建图、执行一次，生成本周 AI 简报（Markdown）。
 """
 import sys
 from pathlib import Path

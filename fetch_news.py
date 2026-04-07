@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-阶段一：通过 Tavily 获取最新 AI 新闻并打印标题与链接。
+阶段一：通过 Tavily 获取最新 AI 新闻并打印标题与链接（与周报主流程同风格查询）。
 运行前请设置 .env 中的 TAVILY_API_KEY。
 """
 import os
@@ -19,14 +19,15 @@ import config
 from tavily import TavilyClient
 
 
-def fetch_ai_news(max_items: int = 5) -> list[dict]:
+def fetch_ai_news(max_items: int = 8) -> list[dict]:
     """调用 Tavily 搜索 AI 新闻，返回条目列表，每项含 title, url, content(snippet)。"""
     if not config.TAVILY_API_KEY:
         raise ValueError("请设置环境变量 TAVILY_API_KEY（可在 .env 中配置）")
 
     client = TavilyClient(api_key=config.TAVILY_API_KEY)
-    # 附带日期，减轻与「泛搜头条」连日重复
-    query = f"{config.TAVILY_SEARCH_QUERIES[0]} news {date.today().isoformat()}"
+    y, w, _ = date.today().isocalendar()
+    week_tag = f"{y}-W{w:02d}"
+    query = f"{config.TAVILY_SEARCH_QUERIES[0]} news past week {week_tag} {date.today().isoformat()}"
     response = client.search(
         query=query,
         topic="news",
@@ -56,7 +57,7 @@ def fetch_ai_news(max_items: int = 5) -> list[dict]:
 
 def main():
     try:
-        items = fetch_ai_news(max_items=5)
+        items = fetch_ai_news(max_items=8)
     except Exception as e:
         print(f"获取失败: {e}", file=sys.stderr)
         sys.exit(1)

@@ -1,6 +1,6 @@
 """
 Search 节点：Tavily 多关键词搜索 + 可选 RSS，合并去重；带重试，Tavily 失败时回退到仅 RSS。
-跨天优先未在近期简报中出现的 URL，查询附带当日日期以提高时效。
+跨天优先未在近期简报中出现的 URL；查询附带 ISO 周与日期，适配「每周一次」的广覆盖抓取。
 """
 import time
 import sys
@@ -43,7 +43,7 @@ def _fetch_rss() -> list[dict]:
         try:
             parsed = feedparser.parse(feed_url)
             label = parsed.feed.get("title", urlparse(feed_url).netloc or "rss")[:30]
-            for e in getattr(parsed, "entries", [])[:15]:  # 每源最多 15 条
+            for e in getattr(parsed, "entries", [])[:25]:  # 每周简报：每源多取几条
                 link = (e.get("link") or "").strip()
                 if not link:
                     continue
@@ -75,10 +75,14 @@ def _fetch_tavily() -> list[dict]:
     client = TavilyClient(api_key=config.TAVILY_API_KEY)
     seen_urls: set[str] = set()
     all_items: list[dict] = []
-    max_per_query = 5
+    max_per_query = max(5, int(getattr(config, "TAVILY_MAX_RESULTS_PER_QUERY", 10)))
+    query_limit = max(1, int(getattr(config, "TAVILY_QUERY_LIMIT", 5)))
     day_tag = date.today().strftime("%Y-%m-%d")
-    for query in config.TAVILY_SEARCH_QUERIES[:3]:
-        q = f"{query} news {day_tag}"
+    y, w, _ = date.today().isocalendar()
+    week_tag = f"{y}-W{w:02d}"
+    queries = config.TAVILY_SEARCH_QUERIES[:query_limit]
+    for query in queries:
+        q = f"{query} news past week {week_tag} {day_tag}"
         response = client.search(
             query=q,
             topic="news",

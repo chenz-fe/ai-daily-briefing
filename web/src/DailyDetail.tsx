@@ -77,11 +77,27 @@ function Section({ section }: { section: DailySection }) {
         </span>
       )
     }
-    // events
+    if (id === 'events') {
+      return (
+        <span className="section-icon">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 1.5 3.5 9h3v5.5L12.5 7h-3z" />
+          </svg>
+        </span>
+      )
+    }
+    // trends / 行动清单
     return (
       <span className="section-icon">
         <svg viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M8 1.5 3.5 9h3v5.5L12.5 7h-3z" />
+          <path
+            d="M2.5 8.5 5.5 11.5 13.5 3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </span>
     )
@@ -107,7 +123,7 @@ export function DailyDetail({ daily, onBack }: Props) {
   return (
     <div className="page">
       <header className="page-header">
-        <div className="logo">今日 AI 简报 · Daily Briefing</div>
+        <div className="logo">本周 AI 简报 · Weekly Briefing</div>
         <button type="button" className="ghost-button" onClick={onBack}>
           返回列表
         </button>

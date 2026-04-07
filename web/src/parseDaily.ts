@@ -9,7 +9,7 @@ const rawFiles = import.meta.glob('../../daily_news/*.md', { as: 'raw', eager: t
 
 const FRONTMATTER_DELIM = '---'
 
-const sectionIdByIndex = ['products', 'models', 'events'] as const
+const sectionIdByIndex = ['products', 'models', 'events', 'trends'] as const
 
 function parseFrontmatterAndBody(raw: string) {
   const parts = raw.split(FRONTMATTER_DELIM)
@@ -189,8 +189,8 @@ function buildDailyFromRaw(raw: string): DailyFull | null {
 
   return {
     date,
-    slug: slug || `daily-${date}`,
-    title: title || `AI 日报 ${date}`,
+    slug: slug || `weekly-${date}`,
+    title: title || `AI 周报 ${date}`,
     description,
     sections
   }

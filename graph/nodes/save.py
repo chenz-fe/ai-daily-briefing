@@ -1,5 +1,5 @@
 """
-Save 节点：解析摘要行、生成 frontmatter、写入 daily_news/YYYY-MM-DD_daily_news.md。
+Save 节点：解析摘要行、生成 frontmatter、写入 daily_news/YYYY-MM-DD_weekly_ai_briefing.md（每周简报）。
 """
 import re
 import sys
@@ -45,13 +45,13 @@ def save_node(state: dict) -> dict:
     try:
         config.OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
         today = date.today()
-        filename = f"{today.isoformat()}_daily_news.md"
+        filename = f"{today.isoformat()}_weekly_ai_briefing.md"
         out_path = config.OUTPUT_PATH / filename
 
         description, body = _parse_summary_and_content(report)
         desc_escaped = (description or "").replace("\n", " ").replace('"', '\\"')[:200]
-        title = f"今日 AI 简报 {today.isoformat()}"
-        slug = f"daily-{today.isoformat()}"
+        title = f"本周 AI 简报 {today.isoformat()}"
+        slug = f"weekly-{today.isoformat()}"
 
         frontmatter = f"""---
 title: "{title}"

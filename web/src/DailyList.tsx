@@ -11,12 +11,12 @@ export function DailyList({ items, onOpen }: Props) {
   return (
     <div className="page">
       <header className="page-header">
-        <div className="page-header-left">今日 AI 简报</div>
-        <div className="page-header-right">Daily Briefing</div>
+        <div className="page-header-left">本周 AI 简报</div>
+        <div className="page-header-right">Weekly Briefing</div>
       </header>
       <main className="page-main">
         <section className="intro">
-          <p>少而精、可读完。按日期倒序浏览，每天花 10–15 分钟了解 AI 进展。</p>
+          <p>每周一更、信息密度高。按生成日期倒序浏览，适合周末或周一花 30–45 分钟读完本周脉络。</p>
         </section>
 
         <section className="list">

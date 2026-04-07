@@ -58,10 +58,10 @@ def filter_node(state: dict) -> dict:
         try:
             result = structured_llm.invoke([HumanMessage(content=prompt)])
             indices = [i for i in result.keep_indices if isinstance(i, int) and 0 <= i < len(raw)]
-            filtered = [raw[i] for i in indices] if indices else raw[:5]
+            filtered = [raw[i] for i in indices] if indices else raw[:15]
             return {"filtered_items": filtered, "error": None}
         except Exception as e:
             last_error = e
             if attempt < LLM_RETRY_MAX:
                 time.sleep(LLM_RETRY_DELAY)
-    return {"filtered_items": raw[:5], "error": str(last_error)}
+    return {"filtered_items": raw[:15], "error": str(last_error)}
